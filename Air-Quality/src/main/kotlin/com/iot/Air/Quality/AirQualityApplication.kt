@@ -1,4 +1,4 @@
-package com.iot.Air.Qulity
+package com.iot.Air.Quality
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class AirQulityApplication
 
 fun main(args: Array<String>) {
-	runApplication<AirQulityApplication>(*args)
+    runApplication<AirQulityApplication>(*args)
 }
