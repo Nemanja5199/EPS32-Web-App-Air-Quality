@@ -1,0 +1,31 @@
+
+
+services:
+  app:
+    build: .
+    container_name: air-quality-app
+    ports:
+      - "${SERVER_PORT}:8080"
+    depends_on:
+      - db
+    environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - DB_URL=jdbc:postgresql://db:5432/${DB_NAME}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - HIBERNATE_DDL_AUTO=${HIBERNATE_DDL_AUTO}
+
+  db:
+    image: postgres:latest
+    container_name: air-quality-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

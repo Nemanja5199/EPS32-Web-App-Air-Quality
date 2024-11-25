@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class AirQulityApplication
+class AirQualityApplication
 
 fun main(args: Array<String>) {
-    runApplication<AirQulityApplication>(*args)
+    runApplication<AirQualityApplication>(*args)
 }

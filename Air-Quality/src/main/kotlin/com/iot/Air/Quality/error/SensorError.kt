@@ -15,7 +15,7 @@ sealed class SensorError {
 
     data class NetworkError(
         override val message: String,
-        val isRetryable: Boolean,
+        val operation: String,
     ) : SensorError()
 
     data class ValidationError(
