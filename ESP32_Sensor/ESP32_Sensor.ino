@@ -1,10 +1,10 @@
   #include <DHT.h>
   #include <WiFi.h>
-  #include<HTTPClient.h>
-  #include<ArduinoJson.h>
+  #include <HTTPClient.h>
+  #include <ArduinoJson.h>
+  #include <esp_task_wdt.h>  
 
-
-
+  #define WDT_TIMEOUT 30     
   #define DHTPIN 23       
   #define DHTTYPE DHT22   
 
@@ -26,44 +26,35 @@
       shouldMeasure = true;  
   }
 
-
-  void connectToWifi(){
-
-    Serial.print("Connecting to Wifi");
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
+  void connectToWifi() {
+      Serial.print("Connecting to Wifi");
+      WiFi.begin(ssid, password);
+      while (WiFi.status() != WL_CONNECTED) {
           delay(500);
           Serial.print(".");
+          esp_task_wdt_reset();  
+      }
+
+      Serial.println();
+      Serial.println("WiFi connected!");
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
   }
 
+  void sendSensorData(SensorData data) {
+      StaticJsonDocument<200> doc;
+      doc["temperature"] = data.temperature;
+      doc["humidity"] = data.humidity;
 
-    Serial.println();
-        Serial.println("WiFi connected!");
-        Serial.print("IP address: ");
-        Serial.println(WiFi.localIP());
+      String jsonString;
+      serializeJson(doc, jsonString);
 
-  }
+      HTTPClient http;
+      http.begin(apiEndpoint);
+      http.addHeader("Content-Type", "application/json");
+      int httpResponseCode = http.POST(jsonString);
 
-
-  void sendSensorData(SensorData data){
-
-    
-
-    StaticJsonDocument  <200> doc;
-
-    doc["temperature"]= data.temperature;
-    doc["humidity"]= data.humidity;
-
-    String jsonString;
-    serializeJson(doc, jsonString);
-
-    HTTPClient http;
-    http.begin(apiEndpoint);
-    http.addHeader("Content-Type", "application/json");
-    int httpResponseCode = http.POST(jsonString);
-
-
-    if (httpResponseCode > 0) {
+      if (httpResponseCode > 0) {
           Serial.print("HTTP Response code: ");
           Serial.println(httpResponseCode);
           String response = http.getString();
@@ -73,52 +64,51 @@
       }
 
       http.end();
-
   }
 
-
-
-
-    void setup() {
-        Serial.begin(9600);
-        dht.begin();
-        timer = timerBegin(0, 80, true);
-        timerAttachInterrupt(timer, &onTimer, true);
-        timerAlarmWrite(timer, 10000000, true);  
-        timerAlarmEnable(timer);
-        connectToWifi();
-    }
-
-    void loop() {
-        if (shouldMeasure) {
-            shouldMeasure = false;
-            SensorData data = readSensorData();
-            printSensorData(data);
-            sendSensorData(data);
-        }
-
-        if (WiFi.status() != WL_CONNECTED) {
-            Serial.println("WiFi connection lost! Reconnecting...");
-            connectToWifi();
-        }
-
+  void setup() {
+      Serial.begin(9600);
       
+      // Initialize watchdog
+      esp_task_wdt_init(WDT_TIMEOUT, true);
+      esp_task_wdt_add(NULL);
+      Serial.println("Watchdog enabled!");
+      
+      dht.begin();
+      timer = timerBegin(0, 80, true);
+      timerAttachInterrupt(timer, &onTimer, true);
+      timerAlarmWrite(timer, 10000000, true);  
+      timerAlarmEnable(timer);
+      connectToWifi();
+  }
 
+  void loop() {
+      esp_task_wdt_reset();  
+      
+      if (shouldMeasure) {
+          shouldMeasure = false;
+          SensorData data = readSensorData();
+          printSensorData(data);
+          sendSensorData(data);
+      }
 
-    }
+      if (WiFi.status() != WL_CONNECTED) {
+          Serial.println("WiFi connection lost! Reconnecting...");
+          connectToWifi();
+      }
+  }
 
+  SensorData readSensorData() {
+      SensorData data;
+      data.temperature = dht.readTemperature();
+      data.humidity = dht.readHumidity();
+      return data;
+  }
 
-    SensorData readSensorData() {
-        SensorData data;
-        data.temperature = dht.readTemperature();
-        data.humidity = dht.readHumidity();
-        return data;
-    }
-
-    void printSensorData(SensorData data) {
-        Serial.print("Temperature: ");
-        Serial.print(data.temperature);
-        Serial.print("°C  Humidity: ");
-        Serial.print(data.humidity);
-        Serial.println("%");
-    }
+  void printSensorData(SensorData data) {
+      Serial.print("Temperature: ");
+      Serial.print(data.temperature);
+      Serial.print("°C  Humidity: ");
+      Serial.print(data.humidity);
+      Serial.println("%");
+  }
