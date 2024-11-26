@@ -77,6 +77,14 @@ Retrieve all recorded sensor readings.
 }
 ```
 
+## **Fronted Overlook**
+
+The web page can be accesed with the link:
+```bash
+http://localhost:8080/
+```
+
+![Sensor website](https://github.com/user-attachments/assets/c934c230-2034-4f3c-843c-161e3267491b)
 
 
 
