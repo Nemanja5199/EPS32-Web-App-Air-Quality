@@ -14,5 +14,9 @@ data class SensorData(
     @Column(nullable = false)
     val humidity: Float,
     @Column(nullable = false)
+    val co2: Int,
+    @Column(nullable = false)
+    val tvoc: Int,
+    @Column(nullable = false)
     val timestamp: LocalDateTime? = null,
 )

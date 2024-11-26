@@ -2,7 +2,8 @@
   #include <WiFi.h>
   #include <HTTPClient.h>
   #include <ArduinoJson.h>
-  #include <esp_task_wdt.h>  
+  #include <esp_task_wdt.h>
+  #include "Adafruit_CCS811.h"  
 
   #define WDT_TIMEOUT 30     
   #define DHTPIN 23       
@@ -16,11 +17,15 @@
   volatile bool shouldMeasure = false;
 
   DHT dht(DHTPIN, DHTTYPE);
+  Adafruit_CCS811 ccs;
 
   struct SensorData {
       float temperature;
       float humidity;
+       uint16_t  co2;
+    uint16_t  tvoc;
   };
+
 
   void IRAM_ATTR onTimer() {
       shouldMeasure = true;  
@@ -42,9 +47,11 @@
   }
 
   void sendSensorData(SensorData data) {
-      StaticJsonDocument<200> doc;
+      StaticJsonDocument<400> doc;
       doc["temperature"] = data.temperature;
       doc["humidity"] = data.humidity;
+      doc["co2"] = data.co2;
+      doc["tvoc"] = data.tvoc;
 
       String jsonString;
       serializeJson(doc, jsonString);
@@ -69,12 +76,14 @@
   void setup() {
       Serial.begin(9600);
       
-      // Initialize watchdog
+      
       esp_task_wdt_init(WDT_TIMEOUT, true);
       esp_task_wdt_add(NULL);
       Serial.println("Watchdog enabled!");
       
       dht.begin();
+      ccs.begin();
+      
       timer = timerBegin(0, 80, true);
       timerAttachInterrupt(timer, &onTimer, true);
       timerAlarmWrite(timer, 10000000, true);  
@@ -102,8 +111,15 @@
       SensorData data;
       data.temperature = dht.readTemperature();
       data.humidity = dht.readHumidity();
+      if(ccs.available()){
+      if(!ccs.readData()){
+      data.co2 = ccs.geteCO2();
+      data.tvoc = ccs.getTVOC();
+    }
       return data;
   }
+}
+
 
   void printSensorData(SensorData data) {
       Serial.print("Temperature: ");
@@ -111,4 +127,11 @@
       Serial.print("°C  Humidity: ");
       Serial.print(data.humidity);
       Serial.println("%");
+      Serial.print("CO2: ");
+      Serial.print(data.co2);
+      Serial.print("ppm , TVOC: ");
+      Serial.println(data.tvoc);
   }
+
+
+ 

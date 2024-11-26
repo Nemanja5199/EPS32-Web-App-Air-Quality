@@ -10,6 +10,8 @@ object SensorDataMapper {
         SensorData(
             temperature = dto.temperature,
             humidity = dto.humidity,
+            co2 = dto.co2,
+            tvoc = dto.tvco,
             timestamp = LocalDateTime.now()
 
         )
@@ -17,6 +19,8 @@ object SensorDataMapper {
     fun toDto(entity: SensorData): SensorDataDto =
         SensorDataDto(
             temperature = entity.temperature,
-            humidity = entity.humidity
+            humidity = entity.humidity,
+            co2 = entity.co2,
+            tvco = entity.tvoc
         )
 }
