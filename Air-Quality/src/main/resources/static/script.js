@@ -20,6 +20,8 @@ ws.onmessage = (event) => {
        sensorDiv.innerHTML = `
            <div>Temperature: ${data.temperature}°C</div>
            <div>Humidity: ${data.humidity}%</div>
+           <div>CO2: ${data.co2}ppm</div>
+           <div>TVCO: ${data.tvco}</div>
            <div>Updated: ${new Date().toLocaleTimeString()}</div>
        `;
    } catch (e) {
