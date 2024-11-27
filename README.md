@@ -1,18 +1,18 @@
 # **Air Quality Monitoring System**
 
-A real-time air quality monitoring system that collects temperature and humidity data using an ESP32 microcontroller, processes the data via a Spring Boot backend, and displays it dynamically on a web interface.
+A real-time air quality monitoring system that collects temperature, humidity, co2 and tvco data using an ESP32 microcontroller, processes the data via a Spring Boot backend, and displays it dynamically on a web interface.
 
 ---
 
 ## **Architecture Overview**
 
-This system leverages an ESP32 microcontroller equipped with a DHT sensor to gather environmental data such as temperature and humidity. The collected data is sent to a REST API built with Spring Boot and Kotlin.
+This system leverages an ESP32 microcontroller equipped with a DHT sensor and CCS811 CO2 sensor to gather environmental data such as temperature, humidity and co2. The collected data is sent to a REST API built with Spring Boot and Kotlin.
 
 The backend performs the following functions:
 - **Stores data** in a PostgreSQL database.
 - **Broadcasts data** in real-time to connected clients using WebSocket.
 
-The frontend web interface receives and displays real-time updates, providing a seamless view of the current temperature and humidity.
+The frontend web interface receives and displays real-time updates, providing a seamless view of the current temperature,humidity and co2.
 
 <img src="https://github.com/user-attachments/assets/a1843776-91bd-4dba-8b4e-73745a4e05f7" alt="Architecture Diagram" width="300"/>
 
@@ -64,8 +64,10 @@ Submit new sensor readings to the backend.
 Request Body Example:
 ```bash
 {
-  "temperature": 25.5,
-  "humidity": 60.2
+    "temperature": 24.6,
+    "humidity": 85.8,
+    "co2": 553,
+    "tvco": 0
 }
 ```
 **GET /api/sensor**
@@ -73,7 +75,9 @@ Retrieve all recorded sensor readings.
 ```bash
 {
     "temperature": 24.6,
-    "humidity": 41.0
+    "humidity": 85.8,
+    "co2": 553,
+    "tvco": 0
 }
 ```
 
